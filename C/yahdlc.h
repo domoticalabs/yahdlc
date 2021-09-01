@@ -7,6 +7,7 @@
 
 #include "fcs.h"
 #include <errno.h>
+#include <stdint.h>
 
 /** HDLC start/end flag sequence */
 #define YAHDLC_FLAG_SEQUENCE 0x7E
@@ -64,6 +65,7 @@ int yahdlc_set_state(yahdlc_state_t *state);
  */
 int yahdlc_get_state(yahdlc_state_t *state);
 
+
 /**
  * Retrieves data from specified buffer containing the HDLC frame. Frames can be
  * parsed from multiple buffers e.g. when received via UART.
@@ -114,7 +116,22 @@ void yahdlc_get_data_reset();
 void yahdlc_get_data_reset_with_state(yahdlc_state_t *state);
 
 /**
- * Creates HDLC frame with specified data buffer.
+ * Creates HDLC frame with specified data buffer, addressed to the specified address.
+ *
+ * @param[in] control Control field structure with frame type and sequence number
+ * @param[in] src Source buffer with data
+ * @param[in] src_len Source buffer length
+ * @param[out] dest Destination buffer (should be bigger than source buffer)
+ * @param[out] dest_len Destination buffer length
+ * @param[in] address The destination address
+ * @retval 0 Success
+ * @retval -EINVAL Invalid parameter
+ */
+int yahdlc_frame_data_to_address(yahdlc_control_t *control, const char *src,
+                      unsigned int src_len, char *dest, unsigned int *dest_len, uint8_t address);
+
+/**
+ * Creates HDLC frame with specified data buffer, address to every listening receiver.
  *
  * @param[in] control Control field structure with frame type and sequence number
  * @param[in] src Source buffer with data
@@ -126,6 +143,14 @@ void yahdlc_get_data_reset_with_state(yahdlc_state_t *state);
  */
 int yahdlc_frame_data(yahdlc_control_t *control, const char *src,
                       unsigned int src_len, char *dest, unsigned int *dest_len);
+
+/**
+ * Return the target address of the received frame. IT DOESN'T CHECK IF THE FRAME IS CORRECT
+ *
+ * @param[in] src The frame
+ * @retval The address
+ */
+uint8_t yahdlc_get_address_from_frame(const char *frame);
 
 #ifdef __cplusplus
 }

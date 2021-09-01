@@ -206,8 +206,8 @@ int yahdlc_get_data_with_state(yahdlc_state_t *state, yahdlc_control_t *control,
   return ret;
 }
 
-int yahdlc_frame_data(yahdlc_control_t *control, const char *src,
-                      unsigned int src_len, char *dest, unsigned int *dest_len) {
+int yahdlc_frame_data_to_address(yahdlc_control_t *control, const char *src,
+                      unsigned int src_len, char *dest, unsigned int *dest_len, uint8_t address) {
   unsigned int i;
   int dest_index = 0;
   unsigned char value = 0;
@@ -221,9 +221,9 @@ int yahdlc_frame_data(yahdlc_control_t *control, const char *src,
   // Start by adding the start flag sequence
   dest[dest_index++] = YAHDLC_FLAG_SEQUENCE;
 
-  // Add the all-station address from HDLC (broadcast)
-  fcs = calc_fcs(fcs, YAHDLC_ALL_STATION_ADDR);
-  yahdlc_escape_value(YAHDLC_ALL_STATION_ADDR, dest, &dest_index);
+  // Add the address
+  fcs = calc_fcs(fcs, (unsigned char) address);
+  yahdlc_escape_value((unsigned char) address, dest, &dest_index);
 
   // Add the framed control field value
   value = yahdlc_frame_control_type(control);
@@ -253,4 +253,15 @@ int yahdlc_frame_data(yahdlc_control_t *control, const char *src,
   *dest_len = dest_index;
 
   return 0;
+}
+
+int yahdlc_frame_data(yahdlc_control_t *control, const char *src,
+                      unsigned int src_len, char *dest, unsigned int *dest_len) {
+  return yahdlc_frame_data_to_address(control, src, src_len, dest, dest_len, YAHDLC_ALL_STATION_ADDR);
+}
+
+uint8_t yahdlc_get_address_from_frame(const char *frame)
+{
+  // The address is the second byte
+  return (uint8_t) frame[1];
 }
