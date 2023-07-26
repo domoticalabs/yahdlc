@@ -8,6 +8,9 @@
 #include "fcs.h"
 #include <errno.h>
 #include <stdint.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/semphr.h"
 
 /** HDLC start/end flag sequence */
 #define YAHDLC_FLAG_SEQUENCE 0x7E
@@ -17,6 +20,14 @@
 
 /** HDLC all station address */
 #define YAHDLC_ALL_STATION_ADDR 0xFF
+
+extern uint32_t con, volt, ser;
+extern double temp_vp;
+
+extern SemaphoreHandle_t xCon;
+extern SemaphoreHandle_t xVolt;
+extern SemaphoreHandle_t xTemp;
+extern SemaphoreHandle_t xSer;
 
 /** Supported HDLC frame types */
 typedef enum {
@@ -95,6 +106,10 @@ int yahdlc_get_data(yahdlc_control_t *control, const char *src,
  *
  * @see yahdlc_get_data
  */
+
+void setConnection();
+int getConnection();
+
 int yahdlc_get_data_with_state(yahdlc_state_t *state, yahdlc_control_t *control, const char *src,
                                unsigned int src_len, char *dest, unsigned int *dest_len);
 
