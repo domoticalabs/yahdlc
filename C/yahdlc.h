@@ -8,6 +8,11 @@
 #include "fcs.h"
 #include <errno.h>
 #include <stdint.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
+
+extern SemaphoreHandle_t xCon;
+
 
 /** HDLC start/end flag sequence */
 #define YAHDLC_FLAG_SEQUENCE 0x7E
@@ -42,6 +47,9 @@ typedef struct {
   int src_index;
   int dest_index;
 } yahdlc_state_t;
+
+void setConnection();
+int getConnection();
 
 #ifdef __cplusplus
 extern "C" {
